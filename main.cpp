@@ -1,14 +1,10 @@
 #include <iostream>
 #include <vector>
-#include <limits>
 #include<list>
 using namespace std;
 
-using ll = long long;
-const ll inf = LLONG_MAX;
 
-
-ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas, ll t){
+int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas, int t){
     if(actual == destino){
         return 0;
     }
@@ -19,7 +15,7 @@ ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas
     list<pair<int,int>> nuevosNodos; //lista de los nodos que agregué en el último paso
     nuevosNodos.push_back(actual); //agrego la pos inicial
 
-    vector<vector<ll>> distancia(filas, vector<ll>(columnas,-1));
+    vector<vector<int>> distancia(filas, vector<int>(columnas,-1));
     distancia[actual.first][actual.second] = t;
 
     vector<vector<bool>> visitado(filas,vector<bool>(columnas,false)); //voy guardando los visitados
@@ -28,7 +24,7 @@ ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas
 
     while(!nuevosNodos.empty()){//siempre que agregue un nodo, trato de avanzar desde el
         pair<int,int> primero = nuevosNodos.front();
-        ll tActual = distancia[primero.first][primero.second];
+        int tActual = distancia[primero.first][primero.second];
         // A continuación agrego los vecinos revisando que:
         //  -Esten en rango de la ciudad
         //  -No tenga programada una manifestacion o si tiene que no haya empezado
@@ -92,8 +88,8 @@ int main() {
         pair<int,int> hospital = {hospitalX,hospitalY};
         pair<int,int> paciente = {pacienteX,pacienteY};
 
-        ll ida = buscar(hospital,paciente,bsas,0);
-        ll vuelta;
+        int ida = buscar(hospital,paciente,bsas,0);
+        int vuelta;
         if(ida != -1){
             vuelta = buscar(paciente,hospital,bsas,ida);
         }
