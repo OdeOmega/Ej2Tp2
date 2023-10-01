@@ -8,10 +8,8 @@ const ll inf = LLONG_MAX;
 
 pair<int,int> p,h;
 
-//vector<vector<vector<int>>> m;
-int filas, columnas;
 
-ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,int> destino,vector<vector<int>> &bsas, vector<vector<vector<ll>>> &m){
+ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,int> destino,vector<vector<int>> &bsas, vector<vector<vector<ll>>> &m,int &filas, int &columnas){
     if(m[t][actual.first][actual.second] != -1){ //Ya llegue alguna vez con el mismo tiempo
         return m[t][actual.first][actual.second];
     }
@@ -38,28 +36,28 @@ ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,i
             //Buscar devuelve inf pero no tiene donde guardarlo
             ll a,b,c,d;
             if(actual.first+1 < m[0].size() && ! recorrido[actual.first+1][actual.second]){
-                m[t+1][actual.first+1][actual.second] = buscar({actual.first+1,actual.second}, t + 1,recorrido, destino, bsas, m);
+                m[t+1][actual.first+1][actual.second] = buscar({actual.first+1,actual.second}, t + 1,recorrido, destino, bsas, m,filas, columnas);
                 a = m[t+1][actual.first+1][actual.second];
             }
             else{
                 a = inf;
             }
             if(actual.first-1 >= 0 && !recorrido[actual.first-1][actual.second]){
-                m[t+1][actual.first-1][actual.second] = buscar({actual.first-1,actual.second}, t + 1,recorrido, destino, bsas, m);
+                m[t+1][actual.first-1][actual.second] = buscar({actual.first-1,actual.second}, t + 1,recorrido, destino, bsas, m,filas, columnas);
                 b = m[t+1][actual.first-1][actual.second];
             }
             else{
                 b = inf;
             }
             if(actual.second+1 < m[0][0].size() && !recorrido[actual.first][actual.second+1]){
-                m[t+1][actual.first][actual.second+1] = buscar({actual.first,actual.second+1}, t + 1,recorrido, destino, bsas, m);
+                m[t+1][actual.first][actual.second+1] = buscar({actual.first,actual.second+1}, t + 1,recorrido, destino, bsas, m,filas, columnas);
                 c = m[t+1][actual.first][actual.second+1];
             }
             else{
                 c = inf;
             }
             if(actual.second-1 >= 0 && !recorrido[actual.first][actual.second-1]){
-                m[t+1][actual.first][actual.second-1] = buscar({actual.first,actual.second-1}, t + 1,recorrido, destino, bsas, m);
+                m[t+1][actual.first][actual.second-1] = buscar({actual.first,actual.second-1}, t + 1,recorrido, destino, bsas, m,filas, columnas);
                 d = m[t+1][actual.first][actual.second-1];
             }
             else{
@@ -73,7 +71,7 @@ ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,i
 }
 
 int main() {
-    int cantTest, tiempo, hospitalX, hospitalY, pacienteX, pacienteY;
+    int cantTest, tiempo, hospitalX, hospitalY, pacienteX, pacienteY,filas,columnas;
     cin>>cantTest;
     for(int t = 0; t<cantTest; t++){
         cin>> filas >> columnas;
@@ -90,10 +88,10 @@ int main() {
         vector<vector<bool>> recorrido(filas,vector<bool>(columnas,false));
         pair<int,int> hospital = {hospitalX,hospitalY};
         pair<int,int> paciente = {pacienteX,pacienteY};
-        ll ida = buscar(hospital,0,recorrido,paciente,bsas,m);
+        ll ida = buscar(hospital,0,recorrido,paciente,bsas,m,filas,columnas);
         ll vuelta = inf;
         if(ida != inf){
-            vuelta = buscar(paciente,ida,recorrido,hospital,bsas,mm);
+            vuelta = buscar(paciente,ida,recorrido,hospital,bsas,mm,filas,columnas);
         }
         if(ida == inf || vuelta == inf){
             cout << "IMPOSIBLE" << endl;
@@ -104,3 +102,4 @@ int main() {
     }
     return 0;
 }
+
