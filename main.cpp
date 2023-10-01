@@ -6,8 +6,6 @@ using namespace std;
 using ll = long long;
 const ll inf = LLONG_MAX;
 
-pair<int,int> p,h;
-
 
 ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,int> destino,vector<vector<int>> &bsas, vector<vector<vector<ll>>> &m,int &filas, int &columnas){
     if(m[t][actual.first][actual.second] != -1){ //Ya llegue alguna vez con el mismo tiempo
@@ -18,17 +16,13 @@ ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,i
             return t;
         }
         if(t >= bsas[actual.first][actual.second] && bsas[actual.first][actual.second] != 0){ //Hay manifestación y llegué tarde
-            //m[t][actual.first][actual.second] = inf;
-            ll INF = inf;
-            return INF;
+            return inf;
         }
         if(actual.first < 0 || actual.second < 0 || actual.first >= filas || actual.second >= columnas){ //Me fui de rando de la matriz
-            ll INF = inf;
-            return INF;
+            return inf;
         }
         if(recorrido[actual.first][actual.second]){ //En esta mismo camino ya pasé por ahí
-            ll INF = inf;
-            return INF;
+            return inf;
         }
         else{
             recorrido[actual.first][actual.second] = true;
