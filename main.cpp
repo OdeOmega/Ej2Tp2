@@ -29,7 +29,7 @@ int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsa
         //  -Esten en rango de la ciudad
         //  -No tenga programada una manifestacion o si tiene que no haya empezado
         //  -No haya sido visitada ya
-        if(primero.first+1<bsas.size() && (bsas[primero.first+1][primero.second] == 0 || t+1 < bsas[primero.first+1][primero.second]) && !visitado[primero.first+1][primero.second]){
+        if(primero.first+1<bsas.size() && (bsas[primero.first+1][primero.second] == 0 || tActual+1 < bsas[primero.first+1][primero.second]) && !visitado[primero.first+1][primero.second]){
             pair<int,int> bajar = {primero.first+1,primero.second};
             nuevosNodos.emplace_back(bajar);
             visitado[primero.first+1][primero.second] = true;
@@ -38,7 +38,7 @@ int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsa
                 return distancia[primero.first+1][primero.second];
             }
         }
-        if(primero.first-1 >= 0 && (bsas[primero.first-1][primero.second] == 0 || t+1 < bsas[primero.first-1][primero.second]) && !visitado[primero.first-1][primero.second]){
+        if(primero.first-1 >= 0 && (bsas[primero.first-1][primero.second] == 0 || tActual+1 < bsas[primero.first-1][primero.second]) && !visitado[primero.first-1][primero.second]){
             pair<int,int> subir = {primero.first-1,primero.second};
             nuevosNodos.emplace_back(subir);
             visitado[primero.first-1][primero.second] = true;
@@ -47,7 +47,7 @@ int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsa
                 return distancia[primero.first-1][primero.second] ;
             }
         }
-        if(primero.second+1<bsas[0].size() && (bsas[primero.first][primero.second+1] == 0 || t+1 < bsas[primero.first][primero.second+1]) && !visitado[primero.first][primero.second+1]){
+        if(primero.second+1<bsas[0].size() && (bsas[primero.first][primero.second+1] == 0 || tActual+1 < bsas[primero.first][primero.second+1]) && !visitado[primero.first][primero.second+1]){
             pair<int,int> derecha = {primero.first,primero.second+1};
             nuevosNodos.emplace_back(derecha);
             visitado[primero.first][primero.second+1] = true;
@@ -56,7 +56,7 @@ int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsa
                 return distancia[primero.first][primero.second+1];
             }
         }
-        if(primero.second-1>=0 && (bsas[primero.first][primero.second-1] == 0 || t+1 < bsas[primero.first][primero.second-1]) && !visitado[primero.first][primero.second-1]){
+        if(primero.second-1>=0 && (bsas[primero.first][primero.second-1] == 0 || tActual+1 < bsas[primero.first][primero.second-1]) && !visitado[primero.first][primero.second-1]){
             pair<int,int> izquierda = {primero.first,primero.second-1};
             nuevosNodos.emplace_back(izquierda);
             visitado[primero.first][primero.second-1] = true;
@@ -67,7 +67,6 @@ int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsa
         }
         nuevosNodos.pop_front();
     }
-    int a = 0;
     return -1;
 }
 
@@ -97,7 +96,7 @@ int main() {
             cout << "IMPOSIBLE" << endl;
         }
         else{
-            cout << ida << " " << vuelta<< endl;
+            cout << ida << " " << vuelta << endl;
         }
     }
     return 0;
