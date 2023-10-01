@@ -8,7 +8,7 @@ using ll = long long;
 const ll inf = LLONG_MAX;
 
 
-ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas){
+ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas, ll t){
     if(actual == destino){
         return 0;
     }
@@ -19,13 +19,16 @@ ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas
     list<pair<int,int>> nuevosNodos; //lista de los nodos que agregué en el último paso
     nuevosNodos.push_back(actual); //agrego la pos inicial
 
+    vector<vector<ll>> distancia(filas, vector<ll>(columnas,-1));
+    distancia[actual.first][actual.second] = t;
+
     vector<vector<bool>> visitado(filas,vector<bool>(columnas,false)); //voy guardando los visitados
     visitado[actual.first][actual.second] = true; //agrego la pos inicial como visitada
 
-    ll t = 0; // el tiempo empieza en cero
 
     while(!nuevosNodos.empty()){//siempre que agregue un nodo, trato de avanzar desde el
         pair<int,int> primero = nuevosNodos.front();
+        ll tActual = distancia[primero.first][primero.second];
         // A continuación agrego los vecinos revisando que:
         //  -Esten en rango de la ciudad
         //  -No tenga programada una manifestacion o si tiene que no haya empezado
@@ -34,37 +37,41 @@ ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas
             pair<int,int> bajar = {primero.first+1,primero.second};
             nuevosNodos.emplace_back(bajar);
             visitado[primero.first+1][primero.second] = true;
+            distancia[primero.first+1][primero.second] = tActual+1;
             if(bajar == destino){
-                return t;
+                return distancia[primero.first+1][primero.second];
             }
         }
         if(primero.first-1 >= 0 && (bsas[primero.first-1][primero.second] == 0 || t+1 < bsas[primero.first-1][primero.second]) && !visitado[primero.first-1][primero.second]){
             pair<int,int> subir = {primero.first-1,primero.second};
             nuevosNodos.emplace_back(subir);
             visitado[primero.first-1][primero.second] = true;
+            distancia[primero.first-1][primero.second] = tActual+1;
             if(subir == destino){
-                return t;
+                return distancia[primero.first-1][primero.second] ;
             }
         }
         if(primero.second+1<bsas[0].size() && (bsas[primero.first][primero.second+1] == 0 || t+1 < bsas[primero.first][primero.second+1]) && !visitado[primero.first][primero.second+1]){
             pair<int,int> derecha = {primero.first,primero.second+1};
             nuevosNodos.emplace_back(derecha);
             visitado[primero.first][primero.second+1] = true;
+            distancia[primero.first][primero.second+1] = tActual+1;
             if(derecha == destino){
-                return t;
+                return distancia[primero.first][primero.second+1];
             }
         }
         if(primero.second-1>=0 && (bsas[primero.first][primero.second-1] == 0 || t+1 < bsas[primero.first][primero.second-1]) && !visitado[primero.first][primero.second-1]){
             pair<int,int> izquierda = {primero.first,primero.second-1};
             nuevosNodos.emplace_back(izquierda);
             visitado[primero.first][primero.second-1] = true;
+            distancia[primero.first][primero.second-1] = tActual+1;
             if(izquierda == destino){
-                return t;
+                return distancia[primero.first][primero.second-1];
             }
         }
         nuevosNodos.pop_front();
-        t++;
     }
+    int a = 0;
     return -1;
 }
 
@@ -85,9 +92,17 @@ int main() {
         pair<int,int> hospital = {hospitalX,hospitalY};
         pair<int,int> paciente = {pacienteX,pacienteY};
 
-        ll ida = buscar(hospital,paciente,bsas);
-
-        cout<< ida << endl;
+        ll ida = buscar(hospital,paciente,bsas,0);
+        ll vuelta;
+        if(ida != -1){
+            vuelta = buscar(paciente,hospital,bsas,ida);
+        }
+        if(ida == -1 || vuelta == -1){
+            cout << "IMPOSIBLE" << endl;
+        }
+        else{
+            cout << ida << " " << vuelta<< endl;
+        }
     }
     return 0;
 }
