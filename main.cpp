@@ -1,67 +1,71 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include<list>
 using namespace std;
 
 using ll = long long;
 const ll inf = LLONG_MAX;
 
 
-ll buscar(pair<int,int> actual, ll t, vector<vector<bool>> recorrido, pair<int,int> destino,vector<vector<int>> &bsas, vector<vector<vector<ll>>> &m,int &filas, int &columnas){
-    if(m[t][actual.first][actual.second] != -1){ //Ya llegue alguna vez con el mismo tiempo
-        return m[t][actual.first][actual.second];
+ll buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas){
+    if(actual == destino){
+        return 0;
     }
-    else{
-        if(actual == destino){ //Legué a destino, devuelvo el tiempo
-            return t;
+
+    int filas = bsas.size();
+    int columnas = bsas[0].size();
+
+    list<pair<int,int>> nuevosNodos; //lista de los nodos que agregué en el último paso
+    nuevosNodos.push_back(actual); //agrego la pos inicial
+
+    vector<vector<bool>> visitado(filas,vector<bool>(columnas,false)); //voy guardando los visitados
+    visitado[actual.first][actual.second] = true; //agrego la pos inicial como visitada
+
+    ll t = 0; // el tiempo empieza en cero
+
+    while(!nuevosNodos.empty()){//siempre que agregue un nodo, trato de avanzar desde el
+        pair<int,int> primero = nuevosNodos.front();
+        // A continuación agrego los vecinos revisando que:
+        //  -Esten en rango de la ciudad
+        //  -No tenga programada una manifestacion o si tiene que no haya empezado
+        //  -No haya sido visitada ya
+        if(primero.first+1<bsas.size() && (bsas[primero.first+1][primero.second] == 0 || t+1 < bsas[primero.first+1][primero.second]) && !visitado[primero.first+1][primero.second]){
+            pair<int,int> bajar = {primero.first+1,primero.second};
+            nuevosNodos.emplace_back(bajar);
+            visitado[primero.first+1][primero.second] = true;
+            if(bajar == destino){
+                return t;
+            }
         }
-        if(t >= bsas[actual.first][actual.second] && bsas[actual.first][actual.second] != 0){ //Hay manifestación y llegué tarde
-            return inf;
+        if(primero.first-1 >= 0 && (bsas[primero.first-1][primero.second] == 0 || t+1 < bsas[primero.first-1][primero.second]) && !visitado[primero.first-1][primero.second]){
+            pair<int,int> subir = {primero.first-1,primero.second};
+            nuevosNodos.emplace_back(subir);
+            visitado[primero.first-1][primero.second] = true;
+            if(subir == destino){
+                return t;
+            }
         }
-        if(actual.first < 0 || actual.second < 0 || actual.first >= filas || actual.second >= columnas){ //Me fui de rando de la matriz
-            return inf;
+        if(primero.second+1<bsas[0].size() && (bsas[primero.first][primero.second+1] == 0 || t+1 < bsas[primero.first][primero.second+1]) && !visitado[primero.first][primero.second+1]){
+            pair<int,int> derecha = {primero.first,primero.second+1};
+            nuevosNodos.emplace_back(derecha);
+            visitado[primero.first][primero.second+1] = true;
+            if(derecha == destino){
+                return t;
+            }
         }
-        if(recorrido[actual.first][actual.second]){ //En esta mismo camino ya pasé por ahí
-            return inf;
+        if(primero.second-1>=0 && (bsas[primero.first][primero.second-1] == 0 || t+1 < bsas[primero.first][primero.second-1]) && !visitado[primero.first][primero.second-1]){
+            pair<int,int> izquierda = {primero.first,primero.second-1};
+            nuevosNodos.emplace_back(izquierda);
+            visitado[primero.first][primero.second-1] = true;
+            if(izquierda == destino){
+                return t;
+            }
         }
-        else{
-            recorrido[actual.first][actual.second] = true;
-            //Acá abajo intento de acceder un lugar de la memoria que no se si existe, está bien que el
-            //Buscar devuelve inf pero no tiene donde guardarlo
-            ll a,b,c,d;
-            if(actual.first+1 < m[0].size() && ! recorrido[actual.first+1][actual.second]){
-                m[t+1][actual.first+1][actual.second] = buscar({actual.first+1,actual.second}, t + 1,recorrido, destino, bsas, m,filas, columnas);
-                a = m[t+1][actual.first+1][actual.second];
-            }
-            else{
-                a = inf;
-            }
-            if(actual.first-1 >= 0 && !recorrido[actual.first-1][actual.second]){
-                m[t+1][actual.first-1][actual.second] = buscar({actual.first-1,actual.second}, t + 1,recorrido, destino, bsas, m,filas, columnas);
-                b = m[t+1][actual.first-1][actual.second];
-            }
-            else{
-                b = inf;
-            }
-            if(actual.second+1 < m[0][0].size() && !recorrido[actual.first][actual.second+1]){
-                m[t+1][actual.first][actual.second+1] = buscar({actual.first,actual.second+1}, t + 1,recorrido, destino, bsas, m,filas, columnas);
-                c = m[t+1][actual.first][actual.second+1];
-            }
-            else{
-                c = inf;
-            }
-            if(actual.second-1 >= 0 && !recorrido[actual.first][actual.second-1]){
-                m[t+1][actual.first][actual.second-1] = buscar({actual.first,actual.second-1}, t + 1,recorrido, destino, bsas, m,filas, columnas);
-                d = m[t+1][actual.first][actual.second-1];
-            }
-            else{
-                d = inf;
-            }
-            recorrido[actual.first][actual.second] = false;
-            m[t][actual.first][actual.second] = min(a,min(b,min(c,d)));
-            return min(a,min(b,min(c,d)));
-        }
+        nuevosNodos.pop_front();
+        t++;
     }
+    return -1;
 }
 
 int main() {
@@ -77,22 +81,13 @@ int main() {
             }
         }
         cin>> hospitalX >> hospitalY >> pacienteX >> pacienteY;
-        vector<vector<vector<ll>>> m(filas*columnas+1,vector<vector<ll>>(filas,vector<ll>(columnas,-1)));
-        vector<vector<vector<ll>>> mm(filas*columnas+1,vector<vector<ll>>(filas,vector<ll>(columnas,-1)));
-        vector<vector<bool>> recorrido(filas,vector<bool>(columnas,false));
+
         pair<int,int> hospital = {hospitalX,hospitalY};
         pair<int,int> paciente = {pacienteX,pacienteY};
-        ll ida = buscar(hospital,0,recorrido,paciente,bsas,m,filas,columnas);
-        ll vuelta = inf;
-        if(ida != inf){
-            vuelta = buscar(paciente,ida,recorrido,hospital,bsas,mm,filas,columnas);
-        }
-        if(ida == inf || vuelta == inf){
-            cout << "IMPOSIBLE" << endl;
-        }
-        else{
-            cout<< ida << " " << vuelta << endl;
-        }
+
+        ll ida = buscar(hospital,paciente,bsas);
+
+        cout<< ida << endl;
     }
     return 0;
 }
