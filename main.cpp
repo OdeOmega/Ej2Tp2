@@ -1,104 +1,107 @@
 #include <iostream>
 #include <vector>
-#include<list>
+#include <algorithm>
+
 using namespace std;
+int NO_LO_VI = 0, EMPECE_A_VER = 1, TERMINE_DE_VER = 2;
 
+struct GRAFO {
+    vector<int> estado;
+    vector<int> back_edges_inf_en;
+    vector<int> back_edges_sup_en;
+    vector<vector<int>> tree_edges;
+    vector<pair<int,int>> back_edges;
+    vector<vector<int>> m;
+    vector<int> padre;
+    vector<int> memo;
+    vector<pair<int,int>> importantes;
 
-int buscar(pair<int,int> actual, pair<int,int> destino, vector<vector<int>> &bsas, int t){
-    if(actual == destino){
-        return 0;
+    GRAFO(int cantBases) :
+        estado(cantBases, NO_LO_VI),
+        back_edges_inf_en(cantBases, 0),
+        back_edges_sup_en(cantBases, 0),
+        tree_edges(cantBases),
+        padre(cantBases),
+        m(cantBases),
+        memo(cantBases, -1){}
+};
+
+void dfs(int v, int p, GRAFO &grafo) {
+    grafo.estado[v] = EMPECE_A_VER;
+    for (int u : grafo.m[v]) {
+        if (grafo.estado[u] == NO_LO_VI) {
+            grafo.padre[u] = v;
+            grafo.tree_edges[v].push_back(u);
+            dfs(u, v, grafo);
+        } else if (u != p) {
+            if (grafo.estado[u] == EMPECE_A_VER){
+                grafo.back_edges_inf_en[v]++;
+                grafo.back_edges.push_back({v,u});
+            }
+            else
+                grafo.back_edges_sup_en[v]++;
+
+        }
     }
-
-    int filas = bsas.size();
-    int columnas = bsas[0].size();
-
-    list<pair<int,int>> nuevosNodos; //lista de los nodos que agregué en el último paso
-    nuevosNodos.push_back(actual); //agrego la pos inicial
-
-    vector<vector<int>> distancia(filas, vector<int>(columnas,-1));
-    distancia[actual.first][actual.second] = t;
-
-    vector<vector<bool>> visitado(filas,vector<bool>(columnas,false)); //voy guardando los visitados
-    visitado[actual.first][actual.second] = true; //agrego la pos inicial como visitada
+    grafo.estado[v] = TERMINE_DE_VER;
+}
 
 
-    while(!nuevosNodos.empty()){//siempre que agregue un nodo, trato de avanzar desde el
-        pair<int,int> primero = nuevosNodos.front();
-        int tActual = distancia[primero.first][primero.second];
-        // A continuación agrego los vecinos revisando que:
-        //  -Esten en rango de la ciudad
-        //  -No tenga programada una manifestacion o si tiene que no haya empezado
-        //  -No haya sido visitada ya
-        if(primero.first+1<bsas.size() && (bsas[primero.first+1][primero.second] == 0 || tActual+1 < bsas[primero.first+1][primero.second]) && !visitado[primero.first+1][primero.second]){
-            pair<int,int> bajar = {primero.first+1,primero.second};
-            nuevosNodos.emplace_back(bajar);
-            visitado[primero.first+1][primero.second] = true;
-            distancia[primero.first+1][primero.second] = tActual+1;
-            if(bajar == destino){
-                return distancia[primero.first+1][primero.second];
-            }
+int cubren(int v, int p, GRAFO &grafo) {
+    if (grafo.memo[v] != -1) return grafo.memo[v];
+    int res = 0;
+    for (int hijo : grafo.tree_edges[v]) {
+        if (hijo != p) {
+            res += cubren(hijo, v, grafo);
         }
-        if(primero.first-1 >= 0 && (bsas[primero.first-1][primero.second] == 0 || tActual+1 < bsas[primero.first-1][primero.second]) && !visitado[primero.first-1][primero.second]){
-            pair<int,int> subir = {primero.first-1,primero.second};
-            nuevosNodos.emplace_back(subir);
-            visitado[primero.first-1][primero.second] = true;
-            distancia[primero.first-1][primero.second] = tActual+1;
-            if(subir == destino){
-                return distancia[primero.first-1][primero.second] ;
-            }
-        }
-        if(primero.second+1<bsas[0].size() && (bsas[primero.first][primero.second+1] == 0 || tActual+1 < bsas[primero.first][primero.second+1]) && !visitado[primero.first][primero.second+1]){
-            pair<int,int> derecha = {primero.first,primero.second+1};
-            nuevosNodos.emplace_back(derecha);
-            visitado[primero.first][primero.second+1] = true;
-            distancia[primero.first][primero.second+1] = tActual+1;
-            if(derecha == destino){
-                return distancia[primero.first][primero.second+1];
-            }
-        }
-        if(primero.second-1>=0 && (bsas[primero.first][primero.second-1] == 0 || tActual+1 < bsas[primero.first][primero.second-1]) && !visitado[primero.first][primero.second-1]){
-            pair<int,int> izquierda = {primero.first,primero.second-1};
-            nuevosNodos.emplace_back(izquierda);
-            visitado[primero.first][primero.second-1] = true;
-            distancia[primero.first][primero.second-1] = tActual+1;
-            if(izquierda == destino){
-                return distancia[primero.first][primero.second-1];
-            }
-        }
-        nuevosNodos.pop_front();
     }
-    return -1;
+    res -= grafo.back_edges_sup_en[v];
+    res += grafo.back_edges_inf_en[v];
+    grafo.memo[v] = res;
+    return res;
 }
 
 int main() {
-    int cantTest, tiempo, hospitalX, hospitalY, pacienteX, pacienteY,filas,columnas;
-    cin>>cantTest;
-    for(int t = 0; t<cantTest; t++){
-        cin>> filas >> columnas;
-        vector<vector<int>> bsas(filas,vector<int>(columnas,0));
-        for(int i = 0; i<filas; i++){
-            for(int j = 0; j<columnas;j++){
-                cin>>tiempo;
-                bsas[i][j] = tiempo;
+    int cantCasos, cantBases, cantEnlaces, U, V;
+    cin >> cantCasos;
+    for(int i = 0; i<cantCasos; i++){
+        cin >> cantBases >> cantEnlaces;
+        GRAFO grafo(cantBases);
+        for(int j = 0; j<cantEnlaces;j++){
+            cin >> U >> V;
+            grafo.m[U].push_back(V);
+            grafo.m[V].push_back(U);
+        }
+
+        dfs(0,-1, grafo);
+
+        for(int u = 0; u < cantBases; u++){
+            if(cubren(u, -1, grafo) == 1){
+                grafo.importantes.push_back({min(u,grafo.padre[u]), max(u,grafo.padre[u])});
             }
         }
-        cin>> hospitalX >> hospitalY >> pacienteX >> pacienteY;
 
-        pair<int,int> hospital = {hospitalX,hospitalY};
-        pair<int,int> paciente = {pacienteX,pacienteY};
-
-        int ida = buscar(hospital,paciente,bsas,0);
-        int vuelta;
-        if(ida != -1){
-            vuelta = buscar(paciente,hospital,bsas,ida);
+        if(grafo.importantes.size() == 0){
+            cout<< 0 << endl;
         }
-        if(ida == -1 || vuelta == -1){
-            cout << "IMPOSIBLE" << endl;
-        }
-        else{
-            cout << ida << " " << vuelta << endl;
+        if(grafo.importantes.size() > 0){
+            for(int q = 0; q < grafo.back_edges.size(); q++){
+                bool esImportante = false;
+                int punta_inf = grafo.back_edges[q].first;
+                int punta_sup = grafo.back_edges[q].second;
+                for(int w = grafo.back_edges[q].first; w != punta_sup && !esImportante; w = grafo.padre[w]){
+                    if(grafo.memo[w] == 1){
+                        esImportante = true;
+                        grafo.importantes.push_back({min(punta_inf,punta_sup), max(punta_inf,punta_sup)});
+                    }
+                }
+            }
+            cout << grafo.importantes.size() << endl;
+            sort(grafo.importantes.begin(), grafo.importantes.end());
+            for(int u = 0; u < grafo.importantes.size(); u++){
+                cout<< grafo.importantes[u].first << " " << grafo.importantes[u].second << endl;
+            }
         }
     }
     return 0;
 }
-
